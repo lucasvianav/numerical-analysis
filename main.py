@@ -1,6 +1,8 @@
 import sys
-from NumericalMethods import *
+import NonlinearEquationMethods as nonlinearEq
+# import NonlinearSystemsMethods as nonlinearSys
 from sympy import pprint
+from sympy import sympify
 
 bisectionName = []
 with open("./namesBisection.txt","r") as txt:
@@ -22,12 +24,30 @@ regulaFalsiName = []
 with open("./namesRegulaFalsi.txt","r") as txt:
     for line in txt: regulaFalsiName.append(line.rstrip())
 
+# nonlinearEqName = ["1", "equation", "single equation", "non-linear equation", "nonlinear equations", "equação não-linear", "equação", "equação não linear"]
+# nonlinearSysName = ["2", "non-linear system", "nonlinear system", "sistema não-linear", "sistema de equações não-lineares", "sistema de equações não lineares", "sistema não linear", "non-linear system of equations", "nonlinear system of equations"]
+
 no = ["no", "não", "n", "false", "falso", "negative", "negativo", "denied", "nein",""]
 yes = ["yes", "y", "sim", "ja", "ya", "si", "positivo", "true", "verdadeiro"]
-exit = ["exit", "exit()", "0", "close", "leave"]
+exitNames = ["exit", "exit()", "0", "close", "leave"]
+
+# while True:
+#     print("\nThe avaliable types for numerical analysis are:")
+#     print("1. Non-Linear Equation")
+#     print("2. Non-Linear System of Equations\n")
+
+#     slctdType = input("Select the desired type: ").lower
+#     while True:
+#         if nonlinearEqName.count(slctdType) > 0:
+#             slctdType = "nonlinear equation"
+#             break
+#         elif nonlinearSysName.count(slctdType) > 0:
+#             slctdType = "nonlinear sys"
+#             break
+#         else: slctdType = input("Invalid input, try again. Select the desired type: ").lower()
 
 while True:
-    print("\nThe numerical analysis' methods avaliable are:")
+    print("\nThe avaliable methods for non-linear equation's analysis are:")
     print("1. Bisection Method")
     print("2. Linear Iterations Method")
     print("3. Newton's Method")
@@ -51,11 +71,10 @@ while True:
         elif regulaFalsiName.count(method) > 0:
             method = "regula falsi"
             break
-        elif exit.count(method) > 0:
+        elif exitNames.count(method) > 0:
             print()
             sys.exit()
-
-        method = input("Invalid input, try again. Select the desired method: ").lower()
+        else: method = input("Invalid input, try again. Select the desired method: ").lower()
 
     print("\n::: " + method.capitalize() + " method selected.")
 
@@ -169,40 +188,40 @@ while True:
     print("\n")
 
     if method == "bisection":
-        if error and maxIterations: root, precision = bisection(fun,a,b,error,maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        elif error: root, precision = bisection(fun,a,b,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        elif maxIterations: root, precision = bisection(fun,a,b,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        else: root, precision = bisection(fun,a,b,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        if error and maxIterations: root, precision = nonlinearEq.bisection(fun,a,b,error,maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        elif error: root, precision = nonlinearEq.bisection(fun,a,b,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        elif maxIterations: root, precision = nonlinearEq.bisection(fun,a,b,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        else: root, precision = nonlinearEq.bisection(fun,a,b,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
 
     elif method == "linear iterations":
         if confirmConv:
-            if error and maxIterations: root, precision = linearIterations(fun,x_0,error,maxIterations,confirmConv,a,b,showLog,showTotalNo)
-            elif error: root, precision = linearIterations(fun,x_0,error,confirmConvergence=confirmConv,infLim=a,supLim=b,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-            elif maxIterations: root, precision = linearIterations(fun,x_0,MAXITER=maxIterations,confirmConvergence=confirmConv,infLim=a,supLim=b,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-            else: root, precision = linearIterations(fun,x_0,confirmConvergence=confirmConv,infLim=a,supLim=b,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+            if error and maxIterations: root, precision = nonlinearEq.linearIterations(fun,x_0,error,maxIterations,confirmConv,a,b,showLog,showTotalNo)
+            elif error: root, precision = nonlinearEq.linearIterations(fun,x_0,error,confirmConvergence=confirmConv,infLim=a,supLim=b,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+            elif maxIterations: root, precision = nonlinearEq.linearIterations(fun,x_0,MAXITER=maxIterations,confirmConvergence=confirmConv,infLim=a,supLim=b,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+            else: root, precision = nonlinearEq.linearIterations(fun,x_0,confirmConvergence=confirmConv,infLim=a,supLim=b,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
         else:
-            if error and maxIterations: root, precision = linearIterations(fun,x_0,error,maxIterations,confirmConv,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-            elif error: root, precision = linearIterations(fun,x_0,error,confirmConvergence=confirmConv,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-            elif maxIterations: root, precision = linearIterations(fun,x_0,MAXITER=maxIterations,confirmConvergence=confirmConv,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-            else: root, precision = linearIterations(fun,x_0,confirmConvergence=confirmConv,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+            if error and maxIterations: root, precision = nonlinearEq.linearIterations(fun,x_0,error,maxIterations,confirmConv,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+            elif error: root, precision = nonlinearEq.linearIterations(fun,x_0,error,confirmConvergence=confirmConv,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+            elif maxIterations: root, precision = nonlinearEq.linearIterations(fun,x_0,MAXITER=maxIterations,confirmConvergence=confirmConv,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+            else: root, precision = nonlinearEq.linearIterations(fun,x_0,confirmConvergence=confirmConv,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
 
     elif method == "newton's":
-        if error and maxIterations: root, precision = newtons(fun,x_0,error,maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        elif error: root, precision = newtons(fun,x_0,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        elif maxIterations: root, precision = newtons(fun,x_0,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        else: root, precision = newtons(fun,x_0,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        if error and maxIterations: root, precision = nonlinearEq.newtons(fun,x_0,error,maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        elif error: root, precision = nonlinearEq.newtons(fun,x_0,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        elif maxIterations: root, precision = nonlinearEq.newtons(fun,x_0,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        else: root, precision = nonlinearEq.newtons(fun,x_0,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
 
     elif method == "secant":
-        if error and maxIterations: root, precision = secant(fun,x_0,x_1,error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        elif error: root, precision = secant(fun,x_0,x_1,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        elif maxIterations: root, precision = secant(fun,x_0,x_1,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        else: root, precision = secant(fun,x_0,x_1,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        if error and maxIterations: root, precision = nonlinearEq.secant(fun,x_0,x_1,error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        elif error: root, precision = nonlinearEq.secant(fun,x_0,x_1,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        elif maxIterations: root, precision = nonlinearEq.secant(fun,x_0,x_1,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        else: root, precision = nonlinearEq.secant(fun,x_0,x_1,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
 
     elif method == "regula falsi":
-        if error and maxIterations: root, precision = regulaFalsi(fun,x_0,x_1,error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        elif error: root, precision = regulaFalsi(fun,x_0,x_1,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        elif maxIterations: root, precision = regulaFalsi(fun,x_0,x_1,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-        else: root, precision = regulaFalsi(fun,x_0,x_1,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        if error and maxIterations: root, precision = nonlinearEq.regulaFalsi(fun,x_0,x_1,error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        elif error: root, precision = nonlinearEq.regulaFalsi(fun,x_0,x_1,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        elif maxIterations: root, precision = nonlinearEq.regulaFalsi(fun,x_0,x_1,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+        else: root, precision = nonlinearEq.regulaFalsi(fun,x_0,x_1,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
 
     print("ROOT:")
     print(f"x = {root:.{precision}f}")
