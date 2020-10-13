@@ -7,10 +7,10 @@ This repository contains numerical methods for finding solutions of a nonlinear 
 ## Nonlinear Equations, methods:
 - Bisection
 - Linear Iterations
-- Newton
+- Newton's
 - Secants
 - Regula Falsi
 
 ## Nonlinear Equations System, methods:
 - Linear Iterations
-- Newton
+- Newton's
