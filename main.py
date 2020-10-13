@@ -1,7 +1,7 @@
 import sys
 from sympy import pprint, sympify
-import NonlinearEquationMethods as nonlinearEq
-import NonlinearSystemsMethods as nonlinearSys
+import nonlinear_equations as nonlinearEq
+import nonlinear_systems as nonlinearSys
 
 no = ["no", "não", "n", "false", "falso", "negative", "negativo", "denied", "nein",""]
 yes = ["yes", "y", "sim", "ja", "ya", "si", "positivo", "true", "verdadeiro"]

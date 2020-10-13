@@ -55,6 +55,40 @@ def intervalMaxMin(func, infLim, supLim, var = 'x'):
     return maxValue, minValue
 
 
+# Substitutes a matrix's row or column for another
+def subMatrix(matrix: Matrix, sub: str, index: int, new: Matrix):
+    if sub == "row":
+        matrix.row_del(index)
+        matrix = matrix.row_insert(index, new)
+
+    elif sub == "col":
+        matrix.col_del(index)
+        matrix = matrix.col_insert(index, new)
+
+    else:
+        raise Exception("The argument 'sub' accepts only 'row' or 'col'.")
+
+    return matrix
+
+
+# Swap a matrix's rows or columns
+def swapMatrix(matrix: Matrix, sub: str, i: int, j: int):
+    if sub == "row":
+        tmp = matrix.row(i)
+        matrix = subMatrix(matrix, sub, i, matrix.row(j))
+        matrix = subMatrix(matrix, sub, j, tmp)
+
+    elif sub == "col":
+        tmp = matrix.col(i)
+        matrix = subMatrix(matrix, sub, i, matrix.col(j))
+        matrix = subMatrix(matrix, sub, j, tmp)
+
+    else:
+        raise Exception("The argument 'sub' accepts only 'row' or 'col'.")
+
+    return matrix
+
+
 if __name__ == "__main__":
     print(intervalMaxMin("E**x**2-4*x",0,1))
     print(intervalMaxMin("E**x**2-4*x",1,2))

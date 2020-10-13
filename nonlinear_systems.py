@@ -48,7 +48,7 @@ def linearIterations(F_var: list, variables: list, var_0: list, epsilon = 10**-6
             print(f"{variables[k]} = % .{precision}f" % varIt[k][0], end="")
             print(" ; ", end="") if k < order - 1 else print()
 
-    # Auxiliar index variable correspondent to the current element in the 'x' and 'y' lists
+    # Auxiliar index variable correspondent to the current element in the variables lists
     j = 0
 
     # Loops through the algorithm until the maximum number of iterations is met
@@ -167,6 +167,7 @@ def newtons(f_var: list, variables: list, var_0: list, epsilon = 10**-6, MAXITER
 
     # If it manages to get out of the loop, it means no root was found, so it prints an error message
     raise Exception("The maximum number of iterations was met and no solution was found.")
+
 
 if __name__ == "__main__":
     f_xy = ["x**2 - y - 1", "y**2 - x - 1"]
