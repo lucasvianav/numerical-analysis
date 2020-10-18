@@ -6,7 +6,7 @@ from util import * # Auxiliar function in  util.py
 
 # LINEAR ITERATIONS METHOD
 # Receives all functinos and variables as lists, for it works for any number of them
-def linearIterations(F_var: list, variables: list, var_0: list, epsilon = 10**-6, MAXITER = 100, displayConsoleLog = False, printTotalIterations = False):
+def linearIterations(F_var: list, variables: list, var_0: list, epsilon = 10**-6, MAXITER = 100, displayConsoleLog = True, printTotalIterations = True):
     try: # Try and convert the functions from string to symbolic
         for func in F_var: func = sympify(func)
     except: # If it fails, print error message
@@ -79,7 +79,7 @@ def linearIterations(F_var: list, variables: list, var_0: list, epsilon = 10**-6
     raise Exception("The maximum number of iterations was met and no solution was found.")
 
 # NEWTON'S METHOD
-def newtons(f_var: list, variables: list, var_0: list, epsilon = 10**-6, MAXITER = 100, displayConsoleLog = False, printPartialDerivatives = False, printTotalIterations = False):
+def newtons(f_var: list, variables: list, var_0: list, epsilon = 10**-6, MAXITER = 100, displayConsoleLog = True, printTotalIterations = True):
     try: # Try and convert the functions from string to symbolic
         for func in f_var: func = sympify(func)
     except: # If it fails, print error message
