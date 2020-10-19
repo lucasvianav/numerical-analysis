@@ -88,29 +88,35 @@ def gaussianElimination(coeffs: Matrix, variables: Matrix, result: Matrix, displ
 
 
 # CHOLESKY METHOD
-def cholesky(coeffs: Matrix, variables: Matrix, result = None, displayConsoleLog = True):
-    # Try and convert the variables to symbolic
-    try: 
-        for var in variables: var = sympify(var)
-    except:
-        raise Exception("The entered variables are invalid.")
-
+def cholesky(coeffs: Matrix, variables = None, result = None, displayConsoleLog = True):
     # Checks if all coefficients are numeric
     try: 
         for coef in coeffs: coef = float(coef)
     except: 
         raise Exception("The coefficients must be numeric.")
 
-    # Checks if there are as many variables as equations
-    if coeffs.shape[0] == coeffs.shape[1] == variables.shape[0] and variables.shape[1] == 1: 
-        order = coeffs.shape[0] # System order (number of equations and variables)
+    # Checks if the coefficient matrix is a square one
+    if coeffs.shape[0] == coeffs.shape[1]: 
+        order = coeffs.shape[0] # System order
     else:
         raise Exception("The system is invalid.")
+
+    # Checks if the result parameter is a matrix
+    if variables:
+        if type(variables) is not Matrix: raise Exception("The 'variables' parameter must be a matrix.")
+        elif variables.shape[0] != order or variables.shape[1] != 1: raise Exception("The system is invalid.")
+        
+        # Try and convert the variables to symbolic
+        try: 
+            for var in variables: var = sympify(var)
+        except:
+            raise Exception("The entered variables are invalid.")
 
     # Checks if the result parameter is a matrix
     if result:
         if type(result) is not Matrix: raise Exception("The 'result' parameter must be a matrix.")
         elif result.shape[0] != order or result.shape[1] != 1: raise Exception("The system is invalid.")
+        elif not variables: raise Exception("The system is invalid.")
 
     # Checks if it is an independent linear system
     if coeffs.det() != 0 and displayConsoleLog:
@@ -188,7 +194,7 @@ def cholesky(coeffs: Matrix, variables: Matrix, result = None, displayConsoleLog
         return G, sol
 
     else:
-        return G
+        return G, False
 
 
 
@@ -349,6 +355,162 @@ def jacobiRichardson(coeffs: Matrix, variables: Matrix, result: Matrix, var0: Ma
     raise Exception("The maximum number of iterations was met and no root was found.")
 
 
+# GAUSS-SEIDEL (GS) METHOD
+def gaussSeidel(coeffs: Matrix, variables: Matrix, result: Matrix, var0: Matrix, epsilon = 10**-6, MAXITER = 100, displayConsoleLog = True, printTotalIterations = True):
+    # Try and convert the variables to symbolic
+    try:
+        for var in variables: var = sympify(var)
+    except:
+        raise Exception("The entered variables are invalid.")
+
+    # Checks if all coefficients are numeric
+    try: 
+        for coef in coeffs: coef = float(coef)
+    except: 
+        raise Exception("The coefficients must be numeric.")
+
+    # Checks if there are as many variables as equations
+    if coeffs.shape[0] == coeffs.shape[1] == variables.shape[0] == result.shape[0]  and variables.shape[1] == result.shape[1] == 1: 
+        order = coeffs.shape[0] # System order (number of equations and variables)
+    else:
+        raise Exception("The system is invalid.")
+
+    # Checks if it is an independent linear system
+    if coeffs.det() != 0 and displayConsoleLog:
+        print("___________________________________________________________________________\n\n")
+        print("GAUSS-SEIDEL METHOD ::: The linear system is an independent one (has only 1 solution).")
+    elif coeffs.det() == 0:
+        if displayConsoleLog:
+            print("___________________________________________________________________________\n\n")
+            print("GAUSS-SEIDEL METHOD ::: The linear system has either no or infinite solutions.\n")
+            print("___________________________________________________________________________\n\n")
+        
+        return
+
+    if displayConsoleLog: printTotalIterations = True
+
+    L = []
+    D = []
+    R = []
+
+    for row in range(order):
+        rowL = []
+        rowD = []
+        rowR = []
+
+        for col in range(order):
+
+            if row > col: 
+                rowL.append(coeffs.row(row)[col])
+                rowD.append(0)
+                rowR.append(0)
+
+            elif row == col: 
+                rowL.append(0)
+                rowD.append(coeffs.row(row)[col])
+                rowR.append(0)
+
+            elif row < col: 
+                rowL.append(0)
+                rowD.append(0)
+                rowR.append(coeffs.row(row)[col])
+
+        L.append(rowL)
+        D.append(rowD)
+        R.append(rowR)
+
+    L = Matrix(L)
+    D = Matrix(D)
+    R = Matrix(R)
+
+    if displayConsoleLog:
+        print("GAUSS-SEIDEL METHOD ::: Ax = b --> A = L + D + R.")
+        print("GAUSS-SEIDEL METHOD ::: L = ")
+        pprint(L)
+        print()
+
+        print("GAUSS-SEIDEL METHOD ::: D = ")
+        pprint(D)
+        print()
+
+        print("GAUSS-SEIDEL METHOD ::: R = ")
+        pprint(R)
+        print()
+
+    if D.det() == 0:
+        if displayConsoleLog:
+            print("GAUSS-SEIDEL METHOD ::: As |D| = 0, the method cannot be used.")
+
+        return
+
+    # A x = b --> x_k = B x_(k-1) + g
+    B = - (D**-1 * L + eye(order))**-1 * (D**-1 * R)
+    g = (D**-1 * L + eye(order))**-1 * (D**-1 * result)
+
+    if displayConsoleLog:
+        print("GAUSS-SEIDEL METHOD ::: A x = b --> x_k = B x_(k-1) + g.")
+        print("GAUSS-SEIDEL METHOD ::: B = ")
+        pprint(B)
+        print()
+
+        print("GAUSS-SEIDEL METHOD ::: g = ")
+        pprint(g)
+        print()
+
+    # Checks convergence
+    if B.norm(oo) < 1:
+        if displayConsoleLog:
+            print(f"GAUSS-SEIDEL METHOD ::: ||B||_oo = {B.norm(oo)} < 1, so there is guarantee of convergence.")
+    elif B.norm(1) < 1:
+        if displayConsoleLog:
+            print(f"GAUSS-SEIDEL METHOD ::: ||B||_1 = {B.norm(1)} < 1, so there is guarantee of convergence.")
+    elif B.norm(2) < 1:
+        if displayConsoleLog:
+            print(f"GAUSS-SEIDEL METHOD ::: ||B||_2 = {B.norm(2)} < 1, so there is guarantee of convergence.")
+    else:
+        if displayConsoleLog:
+            print(f"GAUSS-SEIDEL METHOD ::: ||B||_oo = {B.norm(oo)}, ||B||_1 = {B.norm(1)}, ||B||_2 = {B.norm(2)} are all > 1, so there is no guarantee of convergence.")
+    if displayConsoleLog: print()
+
+    # No. of decimal places for the results
+    precision = int(abs(log10(epsilon))) if epsilon > 0 and log10(epsilon).is_integer else int(6)
+
+    # Only 2 elements will be used, [0] for even iterations and [1] for odd ones
+    x = [var0, 0]
+
+    if displayConsoleLog:
+        print("GAUSS-SEIDEL METHOD ::: Iteration no.00: ", end="")
+        for i in range(len(variables)): print(f"{variables[i]} = % .{precision}f" % x[0][i], end = ", ")
+        print("||vars_k - vars_(k-1)||_oo =  " + "-"*(precision + 2))
+
+    # Auxiliar index variable correspondent to the current element in the 'x' list
+    j = 0
+
+    # Loops through the algorithm until the maximum number of iterations is met
+    for i in range(1, MAXITER):
+        j += 1 if j < 1 else -j # j = 0 --> j = 1 --> j = 0 --> j = 1 ...
+
+        x[j] = B*x[j-1] + g
+        
+        if displayConsoleLog:
+            print(f"GAUSS-SEIDEL METHOD ::: Iteration no.{str(i).zfill(2)}: ", end="")
+            for k in range(len(variables)): print(f"{variables[k]} = % .{precision}f" % x[j][k], end = ", ")
+            print(f"||vars_k - vars_(k-1)||_oo = % .{precision}f" % (x[j] - x[j-1]).norm(oo))
+
+
+        if( (x[j] - x[j-1]).norm(oo) < epsilon * max(1, x[j].norm(oo)) ):
+            if printTotalIterations:
+                print("___________________________________________________________________________\n\n") if not displayConsoleLog else print("\n")
+                print(f"GAUSS-SEIDEL METHOD ::: The solution was successfully found after {i+1} iterations.\n")
+                print("___________________________________________________________________________\n\n")
+
+            return x[j], int(precision)
+
+    # If it manages to get out of the loop, it means no root was found, so it prints an error message
+    raise Exception("The maximum number of iterations was met and no root was found.")
+
+
+
 if __name__ == "__main__":
     # A = Matrix([ [2, 1, 2], [1, 2, 1], [1, 1, 2] ])
     # # A = Matrix([ [1,2,0], [1,2,1], [0,1,1] ])
@@ -380,6 +542,13 @@ if __name__ == "__main__":
     var0 = Matrix([7/10, -8/5, 8/5])
 
     sol, precision = jacobiRichardson(A, var, res, var0, epsilon=10**-5)
+
+    for k in range(len(var)): 
+        print(f"{var[k]} = % .{precision}f" % sol[k], end = "")
+        if k < len(var) - 1: print(", ", end="")
+        else: print("\n")
+
+    sol, precision = gaussSeidel(A, var, res, var0, epsilon=10**-5)
 
     for k in range(len(var)): 
         print(f"{var[k]} = % .{precision}f" % sol[k], end = "")
