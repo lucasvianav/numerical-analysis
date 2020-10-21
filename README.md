@@ -18,7 +18,7 @@ This repository contains numerical methods for finding solutions of a nonlinear 
 ## Linear Equations' Systems, methods:
 ### Exact Methods:
 - Gaussian Elimination;
-- Cholesky Method.
+- Cholesky's.
 ### Iterative Methods:
-- Jacobi-Richardson;
-- Gauss-Seidel.
+- Jacobi-Richardson's;
+- Gauss-Seidel's.
