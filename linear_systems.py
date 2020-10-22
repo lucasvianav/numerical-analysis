@@ -7,22 +7,17 @@ from util import * # Auxiliar function in  util.py
 # EXACT METHODS _______________________________________________________________________________________
 
 # GAUSSIAN ELIMINATION METHOD
-def gaussianElimination(coeffs: Matrix, variables: Matrix, result: Matrix, displayConsoleLog = True):
-    # Try and convert the variables to symbolic
-    try: 
-        for var in variables: var = sympify(var)
-    except:
-        raise Exception("The entered variables are invalid.")
-
+def gaussianElimination(coeffs: Matrix, result: Matrix, displayConsoleLog = True):
     # Checks if all coefficients are numeric
     try: 
         for coef in coeffs: coef = float(coef)
     except: 
         raise Exception("The coefficients must be numeric.")
 
-    # Checks if there are as many variables as equations
-    if coeffs.shape[0] == coeffs.shape[1] == variables.shape[0] == result.shape[0] and variables.shape[1] == result.shape[1] == 1: 
+    # Checks the system's order
+    if coeffs.shape[0] == coeffs.shape[1] == result.shape[0] and result.shape[1] == 1: 
         order = coeffs.shape[0] # System order (number of equations and variables)
+        variables = Matrix([f"x{i}" for i in range(order)])
     else:
         raise Exception("The system is invalid.")
 
@@ -87,8 +82,8 @@ def gaussianElimination(coeffs: Matrix, variables: Matrix, result: Matrix, displ
     return coeffs, result, sol
 
 
-# CHOLESKY METHOD
-def cholesky(coeffs: Matrix, variables = None, result = None, displayConsoleLog = True):
+# CHOLESKY'S METHOD
+def cholesky(coeffs: Matrix, result = None, displayConsoleLog = True):
     # Checks if all coefficients are numeric
     try: 
         for coef in coeffs: coef = float(coef)
@@ -102,21 +97,11 @@ def cholesky(coeffs: Matrix, variables = None, result = None, displayConsoleLog 
         raise Exception("The system is invalid.")
 
     # Checks if the result parameter is a matrix
-    if variables:
-        if type(variables) is not Matrix: raise Exception("The 'variables' parameter must be a matrix.")
-        elif variables.shape[0] != order or variables.shape[1] != 1: raise Exception("The system is invalid.")
-        
-        # Try and convert the variables to symbolic
-        try: 
-            for var in variables: var = sympify(var)
-        except:
-            raise Exception("The entered variables are invalid.")
-
-    # Checks if the result parameter is a matrix
     if result:
         if type(result) is not Matrix: raise Exception("The 'result' parameter must be a matrix.")
         elif result.shape[0] != order or result.shape[1] != 1: raise Exception("The system is invalid.")
-        elif not variables: raise Exception("The system is invalid.")
+        else:
+            variables = Matrix([f"x{i}" for i in range(order)])
 
     # Checks if it is an independent linear system
     if coeffs.det() != 0 and displayConsoleLog:
@@ -200,7 +185,7 @@ def cholesky(coeffs: Matrix, variables = None, result = None, displayConsoleLog 
 
 # ITERATIVE METHODS _______________________________________________________________________________________
 
-# JACOBI-RICHARDSON (JR) METHOD
+# JACOBI-RICHARDSON'S (JR) METHOD
 def jacobiRichardson(coeffs: Matrix, variables: Matrix, result: Matrix, var0: Matrix, epsilon = 10**-6, MAXITER = 100, displayConsoleLog = True, printTotalIterations = True):
     # Try and convert the variables to symbolic
     try:
@@ -355,7 +340,7 @@ def jacobiRichardson(coeffs: Matrix, variables: Matrix, result: Matrix, var0: Ma
     raise Exception("The maximum number of iterations was met and no root was found.")
 
 
-# GAUSS-SEIDEL (GS) METHOD
+# GAUSS-SEIDEL'S (GS) METHOD
 def gaussSeidel(coeffs: Matrix, variables: Matrix, result: Matrix, var0: Matrix, epsilon = 10**-6, MAXITER = 100, displayConsoleLog = True, printTotalIterations = True):
     # Try and convert the variables to symbolic
     try:
@@ -498,7 +483,7 @@ def gaussSeidel(coeffs: Matrix, variables: Matrix, result: Matrix, var0: Matrix,
             print(f"||vars_k - vars_(k-1)||_oo = % .{precision}f" % (x[j] - x[j-1]).norm(oo))
 
 
-        if( (x[j] - x[j-1]).norm(oo) < epsilon * max(1, x[j].norm(oo)) ):
+        if (x[j] - x[j-1]).norm(oo) < epsilon * max(1, x[j].norm(oo)) :
             if printTotalIterations:
                 print("___________________________________________________________________________\n\n") if not displayConsoleLog else print("\n")
                 print(f"GAUSS-SEIDEL METHOD ::: The solution was successfully found after {i+1} iterations.\n")

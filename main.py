@@ -3,25 +3,27 @@ from sympy import *
 import nonlinear_equations as nonlinearEq
 import nonlinear_systems as nonlinearSys
 import linear_systems as linearSys
+import eigenv
 
 no = ["no", "não", "n", "false", "falso", "negative", "negativo", "denied", "nein",""]
 yes = ["yes", "y", "sim", "ja", "ya", "si", "positivo", "true", "verdadeiro"]
 exitNames = ["exit", "exit()", "close", "leave"]
 goBackNames = ["back", "go back", "<-", "<", "back()", "up", "up()"]
 
-nonlinearEqName = ["1", "equation", "single equation", "non-linear equation",
+nonlinearEqName = ["1", "1.", "equation", "single equation", "non-linear equation",
                    "nonlinear equations", "equação não-linear", "equação", "equação não linear"]
-nonlinearSysName = ["2", "non-linear system", "nonlinear system", "sistema não-linear", "sistema de equações não-lineares",
+nonlinearSysName = ["2", "2.", "non-linear system", "nonlinear system", "sistema não-linear", "sistema de equações não-lineares",
                     "sistema de equações não lineares", "sistema não linear", "non-linear system of equations", "nonlinear system of equations"]
-linearSysName = ["3", "linear system", "sistema linear", "sistema de equações lineares",
+linearSysName = ["3", "3.", "linear system", "sistema linear", "sistema de equações lineares",
                  "sistema de equações lineares", "linear system of equations"]
-
+eigenName = ["4", "4.", "eigenvalue", "eigenvalues", "eigenvector", "eigenvectors", "eigen", "eig"]
 
 while True:
     print("\nTHE AVALIABLE TYPES FOR NUMERICAL ANALYSIS ARE:")
     print("1. Non-Linear Equation")
     print("2. Non-Linear System of Equations")
-    print("3. Linear System of Equations\n")
+    print("3. Linear System of Equations")
+    print("4. Eigenvalues and Eigenvectors\n")
 
     slctdType = input("Select the desired type: ").lower()
     while True:
@@ -33,6 +35,9 @@ while True:
             break
         elif linearSysName.count(slctdType) > 0:
             slctdType = "linear sys"
+            break
+        elif eigenName.count(slctdType) > 0:
+            slctdType = "eigenvalues"
             break
         elif exitNames.count(slctdType) > 0:
             print()
@@ -471,7 +476,7 @@ while True:
 
             print("\nConsider the system A x = b.\n")
 
-            order = input("What is the system's order? (no. of equations, variables) ")
+            order = input("What is the system's order (no. of equations, variables)? ")
             while True:
                 try: order = int(order)
                 except: order = input("Invalid input, try again. What is the system's order? ")
@@ -485,14 +490,13 @@ while True:
                 while True:
                     if no.count(results) > 0:
                         results = None
-                        variables = None
                         break
                     
                     elif yes.count(results) > 0:
                         results = True
                         break
 
-            if method != "cholesky" or (method == "cholesky" and variables):
+            if "gaussian elimination" != method != "cholesky":
                 variables = input("\nWhat variables will be used? Separate them with a whitespace: ").split()
                 while True:
                     hasInvalid = False
@@ -558,23 +562,31 @@ while True:
                         break
 
             if method == "jacobi-richardson" or method == "gauss-seidel":
-                var_0 = input("\nEnter the transpose of the x_0 vector (variables approx. for iteration 0) - oneline with elements separated by one whitespace. ").split()
+                var_0 = input("\nEnter the transpose of the x_0 vector (variables approx. for iteration 0) - oneline with elements separated by one whitespace. ")
                 while True:
-                    hasInvalid = False
+                    if no.count(var_0) > 0:
+                        var_0 = Matrix([results[i]/coeffs.row(i)[i] for i in range(order)])
+                        break
 
-                    for var in var_0:
-                        try: var = float(sympify(var))
+                    else:
+                        var_0 = var_0.split()
 
-                        except: 
-                            var_0 = input("Invalid input, the approximations must be numeric. Try again: ").split()
-                            hasInvalid = True
+                        hasInvalid = False
+
+                        for var in var_0:
+                            try: var = float(sympify(var))
+
+                            except: 
+                                var_0 = input("Invalid input, the approximations must be numeric. Try again: ")
+                                hasInvalid = True
+                                break
+
+                        if not hasInvalid:
+                            var_0 = Matrix(var_0)
                             break
 
-                    if not hasInvalid:
-                        var_0 = Matrix(var_0)
-                        print("\n::: x_0 = ") 
-                        pprint(var_0)
-                        break
+                print("\n::: x_0 = ") 
+                pprint(var_0)
 
                 error = input("\nEnter the desired error margin: ")
                 while True:
@@ -626,56 +638,231 @@ while True:
 
             print("\n")
 
-            if method == "gaussian elimination":
-                coeffs, result, sol = linearSys.gaussianElimination(coeffs, variables, results, displayConsoleLog=showLog)
+            try:
+                if method == "gaussian elimination":
+                    coeffs, result, sol = linearSys.gaussianElimination(coeffs, results, displayConsoleLog=showLog)
 
-                print("SOLUTION FOR 'A x = b': \n")
+                    print("SOLUTION FOR 'A x = b': \n")
 
-                print("A =")
-                pprint(coeffs)
-                print()
+                    print("A =")
+                    pprint(coeffs)
+                    print()
 
-                print("b =")
-                pprint(result)
-                print()
+                    print("b =")
+                    pprint(result)
+                    print()
 
-                print("x =")
-                pprint(sol)
-                print()
-
-            elif method == "cholesky":
-                G, sol = linearSys.cholesky(coeffs, variables, result=results, displayConsoleLog=showLog)
-
-                print("SOLUTION FOR 'A x = G G^T x = b': \n") if sol else print("DECOMPOSITION A = G G^T:")
-
-                print("G =")
-                pprint(G)
-                print()
-
-                print("G^T =")
-                pprint(G.T)
-                print()
-
-                if sol:
                     print("x =")
                     pprint(sol)
                     print()
 
-            elif method == "jacobi-richardson":
-                if error and maxIterations: sol, precision = linearSys.jacobiRichardson(coeffs,variables,results,var_0,epsilon=error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-                elif error: sol, precision = linearSys.jacobiRichardson(coeffs,variables,results,var_0,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-                elif maxIterations: sol, precision = linearSys.jacobiRichardson(coeffs,variables,results,var_0,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-                else: sol, precision = linearSys.jacobiRichardson(coeffs,variables,results,var_0,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                elif method == "cholesky":
+                    G, sol = linearSys.cholesky(coeffs, result=results, displayConsoleLog=showLog)
+
+                    print("SOLUTION FOR 'A x = G G^T x = b': \n") if sol else print("DECOMPOSITION A = G G^T:")
+
+                    print("G =")
+                    pprint(G)
+                    print()
+
+                    print("G^T =")
+                    pprint(G.T)
+                    print()
+
+                    if sol:
+                        print("x =")
+                        pprint(sol)
+                        print()
+
+                elif method == "jacobi-richardson":
+                    if error and maxIterations: sol, precision = linearSys.jacobiRichardson(coeffs,variables,results,var_0,epsilon=error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                    elif error: sol, precision = linearSys.jacobiRichardson(coeffs,variables,results,var_0,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                    elif maxIterations: sol, precision = linearSys.jacobiRichardson(coeffs,variables,results,var_0,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                    else: sol, precision = linearSys.jacobiRichardson(coeffs,variables,results,var_0,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                    
+
+                elif method == "gauss-seidel":
+                    if error and maxIterations: sol, precision = linearSys.gaussSeidel(coeffs,variables,results,var_0,error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                    elif error: sol, precision = linearSys.gaussSeidel(coeffs,variables,results,var_0,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                    elif maxIterations: sol, precision = linearSys.gaussSeidel(coeffs,variables,results,var_0,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                    else: sol, precision = linearSys.gaussSeidel(coeffs,variables,results,var_0,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+
+                if method == "jacobi-richardson" or method == "gauss-seidel":
+                    print("SOLUTION:")
+                    for k in range(order): print(f"{variables[k]} = % .{precision}f" % sol[k])
+
+            except TypeError:
+                print("UNFORTUNATELY, THE METHOD WAS NOT ABLE TO SOLVE THIS SYSTEM.")
+
+            print("\n___________________________________________________________________________\n")
+
+    elif slctdType == "eigenvalues":
+        powerName = ["1", "1.", "power", "power method"]
+        inversePowerName = ["2", "2.", "inverse power", "inverse power method", "inverse"]
+
+        while True:
+            print("\nThe avaliable methods for eigenvalues and eigenvectors' analysis are:")
+            print(" 1. Power Method")
+            print(" 2. Inverse Power Method\n")
+
+            method = input("Select the desired method: ").lower()
+            while True:
+                if powerName.count(method) > 0:
+                    method = "power"
+                    break
+                elif inversePowerName.count(method) > 0:
+                    method = "inverse power"
+                    break
+                elif exitNames.count(method) > 0:
+                    print()
+                    sys.exit()
+                elif goBackNames.count(method) > 0:
+                    goBack = True
+                    print("\n___________________________________________________________________________\n")
+                    break
+                else: method = input("Invalid input, try again. Select the desired method: ").lower()
+
+            if goBack: break
+
+            print("\n::: " + method.title() + " method selected.")       
+
+            print("\nConsider the square matrix A.\n")
+
+            order = input("What is the matrix's order (no. of rows and columns)? ")
+            while True:
+                try: order = int(order)
+                except: order = input("Invalid input, try again. What is the matrix's order? ")
+                else: 
+                    print(f"\n::: The matrix has order {order}.")
+                    break            
+
+            print("\nEnter A matrix - each row separated by a linebreak and each column separated by one whitespace.")
+            while True:
+                A = []
+                for i in range(order): A.append(input().split())
+
+                try: A = Matrix(A)
+
+                except: 
+                    print("Invalid input, try again. Each row must be separated by exactly one linebreak and each column must be separated by exactly one whitespace.")
+                    print("e.g. order 3:")
+                    print("1 2 3")
+                    print("4 5 6")
+                    print("7 8 9")
+                    print()
+                    
+                else: 
+                    hasInvalid = False
+                    for coeff in A:
+                        try: float(sympify(coeff))
+
+                        except: hasInvalid = True; break
+
+                    if hasInvalid: 
+                        print("Invalid input, the A matrix must be numeric. Try again: ")
+
+                    elif A.shape[0] != A.shape[1] or A.shape[0] != order: 
+                        print(f"Invalid input, the A matrix must be a square matrix of order {order}. Try again: ")
+
+                    else:
+                        print("\n::: A = ")
+                        pprint(A)
+                        break
+
+            var_0 = input("\nEnter the transpose of the y_0 vector (eigenvector approx. for iteration 0) - oneline with elements separated by one whitespace. ")
+            while True:
+                hasInvalid = False
+
+                if var_0 == "":
+                    var_0 = input("Invalid input, the approximations must be numeric. Try again: ")
+                    continue
                 
+                else: var_0 = var_0.split()
 
-            elif method == "gauss-seidel":
-                if error and maxIterations: sol, precision = linearSys.gaussSeidel(coeffs,variables,results,var_0,error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-                elif error: sol, precision = linearSys.gaussSeidel(coeffs,variables,results,var_0,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-                elif maxIterations: sol, precision = linearSys.gaussSeidel(coeffs,variables,results,var_0,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
-                else: sol, precision = linearSys.gaussSeidel(coeffs,variables,results,var_0,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                if len(var_0) != order:
+                    var_0 = input(f"Invalid input, the approximations must have {order} rows. Try again: ")
+                    continue
 
-            if method == "jacobi-richardson" or method == "gauss-seidel":
-                print("SOLUTION:")
-                for k in range(order): print(f"{variables[k]} = % .{precision}f" % sol[k])
+                for var in var_0:
+                    try: var = float(sympify(var))
+
+                    except: 
+                        var_0 = input("Invalid input, the approximations must be numeric. Try again: ")
+                        hasInvalid = True
+                        break
+
+                if not hasInvalid:
+                    var_0 = Matrix(var_0)
+                    break
+
+            print("\n::: y_0 = ") 
+            pprint(var_0)
+
+            error = input("\nEnter the desired error margin: ")
+            while True:
+                if no.count(error) > 0: 
+                    error = False
+                    break
+                else:
+                    try: error = float(sympify(error))
+                    except: error = input("Invalid input, try again. Enter the desired error margin: ")
+                    else:
+                        if error >= 1 or error == 0: error = input("Invalid input, the error margin must be less than 1. Try again: ")
+                        else: break
+
+            maxIterations = input("\nEnter the maximum number of iterations desired: ")
+            while True:
+                if no.count(maxIterations) > 0: 
+                    maxIterations = False
+                    break
+                try: maxIterations = int(sympify(maxIterations))
+                except: maxIterations = input("Invalid input, try again. Enter the maximum number of iterations: ")
+                else:
+                    if maxIterations < 1: maxIterations = input("Invalid input, there must be at least 1 iterations. Try again: ")
+                    else: break
+
+            showLog = input("\nDisplay console log for all values? ")
+            while True:
+                if yes.count(showLog):
+                    showLog = True
+                    showTotalNo = True
+                    break
+
+                elif no.count(showLog):
+                    showLog = False
+
+                    showTotalNo = input("\nDisplay total number of iterations? ")
+                    while True:
+                        if yes.count(showTotalNo):
+                            showTotalNo = True
+                            break
+                        elif no.count(showTotalNo):
+                            showTotalNo = False
+                            break
+                        else: showTotalNo = input("Invalid input, try again. Display total number of iterations? ")
+
+                break
+
+            else: showLog = input("Invalid input, try again. Display console log for all values? ")
+
+            print("\n")
+
+            if method == "power":
+                if error and maxIterations: eigenvalue, eigenvector, precision = eigenv.powerMethod(A,var_0,epsilon=error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                elif error: eigenvalue, eigenvector, precision = eigenv.powerMethod(A,var_0,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                elif maxIterations: eigenvalue, eigenvector, precision = eigenv.powerMethod(A,var_0,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                else: eigenvalue, eigenvector, precision = eigenv.powerMethod(A,var_0,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+            
+            elif method == "inverse power":
+                if error and maxIterations: eigenvalue, eigenvector, precision = eigenv.inversePower(A,var_0,epsilon=error,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                elif error: eigenvalue, eigenvector, precision = eigenv.inversePower(A,var_0,error,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                elif maxIterations: eigenvalue, eigenvector, precision = eigenv.inversePower(A,var_0,MAXITER=maxIterations,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+                else: eigenvalue, eigenvector, precision = eigenv.inversePower(A,var_0,displayConsoleLog=showLog,printTotalIterations=showTotalNo)
+
+            print("SOLUTION:\n")
+            print(f"Eigenvalue = %.{precision}f\n" % eigenvalue)
+            print("Eigenvector = ")
+            pprint(eigenvector)
+            print()
 
             print("\n___________________________________________________________________________\n")
